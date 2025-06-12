@@ -1,0 +1,286 @@
+body {
+    background-color: #0f1116;
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 20px;
+}
+
+.main {
+    max-height: 700px;
+}
+
+
+#container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#links {
+    width: 400px;
+    text-align: left;
+    font-size: x-large;
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+#links a {
+    color: white;
+    text-decoration: none;
+    margin-top: 20px;
+    margin: 10px 0px;
+    border: white 1px solid;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+#links a:hover {
+    background-color: #1f1f1f;
+    cursor: pointer;
+}
+
+#header {
+    max-width: 1200px;
+    max-height: 1200px;
+}
+
+
+#maze-container {
+    max-width: 1000px;
+    max-height: 1000px;
+    margin: 10px;
+    padding: 10px;
+
+}
+
+#maze-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0%;
+    padding: 0%;
+}
+
+#row-input,
+#col-input {
+    margin: 20px;
+
+}
+
+#row-col-input-container,
+#row-input-container,
+#col-input-container {
+    margin: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+
+}
+
+#row-input-span,
+#col-input-span {
+    color: #5a5a5a;
+    font-size: 20px;
+}
+
+#start-cell,
+#end-cell {
+    color: white;
+    border: none;
+}
+
+
+
+#solver-label {
+    margin: 10px;
+}
+
+select {
+    appearance: none;
+    background-color: #1f1f1f;
+    color: #ffffff;
+    width: 100px;
+    margin: 10px;
+    padding: 5px;
+    border: 0.5px solid black;
+
+}
+
+#btn-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button {
+    background-color: transparent;
+    color: white;
+    border: 1px solid gray;
+    border-radius: 10px;
+    width: 100px;
+    margin: 10px;
+}
+
+.maze-cell {
+    border: 1px solid transparent;
+    width: 30px;
+    height: 30px;
+    margin: 0px;
+    padding: 0px;
+    border-radius: 3px;
+    margin: -1.5px;
+
+    background-color: #0f1116;
+    transition: 0.7s ease-out;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &.solution {
+        background-image: radial-gradient(circle, #e95620 30%, transparent 50%);
+    }
+
+    &.visited {
+        background-image: radial-gradient(circle, #e956200d 30%, transparent 50%);
+    }
+
+
+    /* Cell has top neighbor connected. */
+    &.u {
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid gray;
+        border-left: 1px solid gray;
+        border-right: 1px solid gray
+    }
+
+    /* Cell has bottom neighbor connected. */
+    &.d {
+        border-top: 1px solid gray;
+        border-bottom: 1px solid transparent;
+        border-left: 1px solid gray;
+        border-right: 1px solid gray
+    }
+
+    /* Cell has left neighbor connected. */
+    &.l {
+        border-top: 1px solid gray;
+        border-bottom: 1px solid gray;
+        border-left: 1px solid transparent;
+        border-right: 1px solid gray
+    }
+
+    /* Cell has right neighbor connected. */
+    &.r {
+        border-top: 1px solid gray;
+        border-bottom: 1px solid gray;
+        border-left: 1px solid gray;
+        border-right: 1px solid transparent;
+    }
+
+    /* Cell has left and right neighbor connected. */
+    &.lr {
+        border-top: 1px solid gray;
+        border-bottom: 1px solid gray;
+        border-left: 1px solid transparent;
+        border-right: 1px solid transparent;
+    }
+
+    /* Cell has top and bottom neighbor connected. */
+    &.ud {
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid transparent;
+        border-left: 1px solid gray;
+        border-right: 1px solid gray
+    }
+
+    /* Cell has left and bottom neighbor connected. */
+    &.ld {
+        border-top: 1px solid gray;
+        border-bottom: 1px solid transparent;
+        border-left: 1px solid transparent;
+        border-right: 1px solid gray
+    }
+
+    /* Cell has left and top neighbor connected. */
+    &.lu {
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid gray;
+        border-left: 1px solid transparent;
+        border-right: 1px solid gray
+    }
+
+    /* Cell has right and bottom neighbor connected. */
+    &.rd {
+        border-top: 1px solid gray;
+        border-bottom: 1px solid transparent;
+        border-left: 1px solid gray;
+        border-right: 1px solid transparent
+    }
+
+    /* Cell has right and bottom neighbor connected. */
+    &.ru {
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid gray;
+        border-left: 1px solid gray;
+        border-right: 1px solid transparent;
+    }
+
+    /* Cell has right and bottom neighbor connected. */
+    &.lru {
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid gray;
+        border-left: 1px solid transparent;
+        border-right: 1px solid transparent;
+    }
+
+    /* Cell has right and bottom neighbor connected. */
+    &.lrd {
+        border-top: 1px solid gray;
+        border-bottom: 1px solid transparent;
+        border-left: 1px solid transparent;
+        border-right: 1px solid transparent;
+    }
+
+    /* Cell has left, top and bottom neighbor connected. */
+    &.lud {
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid transparent;
+        border-left: 1px solid transparent;
+        border-right: 1px solid gray;
+
+    }
+
+    /* Cell has right, top and bottom neighbor connected. */
+    &.rud {
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid transparent;
+        border-left: 1px solid gray;
+        border-right: 1px solid transparent;
+    }
+
+    /* Cell has all four neighbors connected. */
+    &.no {
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid transparent;
+        border-left: 1px solid transparent;
+        border-right: 1px solid transparent;
+    }
+
+    &.all {
+        border-top: 1px solid gray;
+        border-bottom: 1px solid gray;
+        border-left: 1px solid gray;
+        border-right: 1px solid gray;
+    }
+
+
+}
+
+.maze-cell:hover {
+    background-color: rgba(72, 72, 72, 0.395);
+    transition: 0.1s ease-in;
+}
