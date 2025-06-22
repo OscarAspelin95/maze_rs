@@ -11,7 +11,6 @@ dioxus = { version = "0.7.0-alpha.0", features = [] }
 rand = { version = "0.9.1" }
 priority-queue = { version = "2.5.0" }
 
-
 [features]
 default = ["desktop"]
 # The feature that are only required for the web = ["dioxus/web"] build target should be optional and only enabled in the web = ["dioxus/web"] feature

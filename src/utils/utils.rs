@@ -6,7 +6,7 @@ use std::{
 
 use priority_queue::PriorityQueue;
 
-use rand::prelude::*;
+use rand::{prelude::*, rng};
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
 pub enum Direction {
@@ -23,6 +23,8 @@ pub enum Priority {
     Close,
     // Prioritize cells that are further away from start point and closer to end point.
     Prio,
+    // Given each neighbor a random priority.
+    Random,
 }
 
 impl Direction {
@@ -62,20 +64,29 @@ pub fn direction_reverse(direction: &Direction) -> Direction {
         Direction::Right => Direction::Left,
     }
 }
-// We need a class for generating the maze.
+// For now, only the wilson maze generation algorithm is supported.
 #[derive(Debug, Clone)]
 pub struct WilsonMaze {
     pub rows: usize,
     pub cols: usize,
+    pub start_cell: (usize, usize),
+    pub end_cell: (usize, usize),
     pub visited: HashSet<(usize, usize)>,
     pub grid: Vec<Vec<HashSet<Direction>>>,
 }
 
 impl WilsonMaze {
-    pub fn new(rows: usize, cols: usize) -> Self {
+    pub fn new(
+        rows: usize,
+        cols: usize,
+        start_cell: (usize, usize),
+        end_cell: (usize, usize),
+    ) -> Self {
         return Self {
             rows: rows,
             cols: cols,
+            start_cell: start_cell,
+            end_cell: end_cell,
             visited: HashSet::new(),
             grid: generate_grid(rows, cols),
         };
@@ -90,16 +101,12 @@ impl WilsonMaze {
         }
     }
 
+    pub fn max_dist(&self) -> usize {
+        return (self.rows - 0) + (self.cols - 0);
+    }
+
     pub fn in_bounds(&self, row: i32, col: i32) -> bool {
         return (row >= 0 && row < self.rows as i32) && (col >= 0 && col < self.cols as i32);
-    }
-
-    pub fn start_cell(&self) -> (usize, usize) {
-        return (0, 0);
-    }
-
-    pub fn end_cell(&self) -> (usize, usize) {
-        return (self.rows - 1, self.cols - 1);
     }
 
     pub fn neighbors(&self, row: i32, col: i32) -> Vec<(Direction, (usize, usize))> {
@@ -180,10 +187,12 @@ impl WilsonMaze {
     }
 
     pub fn generate(&mut self) {
-        let mut start = self.start_cell();
+        let mut start = self.start_cell;
 
         self.visited.insert(start);
 
+        // We can probably make this better by using
+        // self.visited or similar.
         let mut unvisited: HashSet<(usize, usize)> = HashSet::new();
         for row in 0..self.rows {
             for col in 0..self.cols {
@@ -201,6 +210,7 @@ impl WilsonMaze {
             for (cell, direction, next_cell) in walk {
                 let (cell_row, cell_col) = cell;
                 let (next_cell_row, next_cell_col) = next_cell;
+
                 self.grid[cell_row][cell_col].insert(direction);
                 self.grid[next_cell_row][next_cell_col].insert(direction_reverse(&direction));
 
@@ -220,8 +230,8 @@ pub fn get_bfs_solution(
         HashSet<(usize, usize)>,
     ) = bfs_solve(&maze, priority);
 
-    let mut s = maze.end_cell();
-    let start = maze.start_cell();
+    let mut s = maze.end_cell;
+    let start = maze.start_cell;
 
     let mut path: HashSet<(usize, usize)> = HashSet::new();
     path.insert(s);
@@ -243,27 +253,36 @@ pub fn get_bfs_solution(
     panic!("No solution exists");
 }
 
+#[inline]
+pub fn abs_dist(x: usize, y: usize) -> usize {
+    return std::cmp::max(x, y) - std::cmp::min(x, y);
+}
+
 /// We calculate a priority based on considering the distance
 /// from start cell (lower priority) and end cell (higher priority).
+#[inline]
 pub fn weighted_priority(
     cell: (usize, usize),
     start_cell: (usize, usize),
     end_cell: (usize, usize),
+    max_dist: usize,
 ) -> usize {
-    let max_dist = (end_cell.0 - start_cell.0) + (end_cell.1 - start_cell.1);
+    let dx_end = abs_dist(cell.0, end_cell.0);
+    let dy_end = abs_dist(cell.1, end_cell.1);
 
-    let dx_end = std::cmp::max(cell.0, end_cell.0) - std::cmp::min(cell.0, end_cell.0);
-    let dy_end = std::cmp::max(cell.1, end_cell.1) - std::cmp::min(cell.1, end_cell.1);
-
-    let dx_start = std::cmp::max(cell.0, start_cell.0) - std::cmp::min(cell.0, start_cell.0);
-    let dy_start = std::cmp::max(cell.1, start_cell.1) - std::cmp::min(cell.1, start_cell.1);
+    let dx_start = abs_dist(cell.0, start_cell.0);
+    let dy_start = abs_dist(cell.1, start_cell.1);
 
     return max_dist + (dx_start + dy_start) - (dx_end + dy_end);
 }
 
 /// Cells closer to the end cell will get lower priority (very non-ideal).
+#[inline]
 pub fn close_priority(cell: (usize, usize), end_cell: (usize, usize)) -> usize {
-    return (end_cell.0 - cell.0) + (end_cell.1 - cell.1);
+    let dx = abs_dist(end_cell.0, cell.0);
+    let dy = abs_dist(end_cell.1, cell.1);
+
+    return dx + dy;
 }
 
 pub fn bfs_solve(
@@ -273,15 +292,15 @@ pub fn bfs_solve(
     HashMap<(usize, usize), (usize, usize)>,
     HashSet<(usize, usize)>,
 ) {
-    let end_cell = maze.end_cell();
-    let start_cell = maze.start_cell();
+    let end_cell = maze.end_cell;
+    let start_cell = maze.start_cell;
 
     let mut visited: HashSet<(usize, usize)> = HashSet::new();
 
     let mut path: HashMap<(usize, usize), (usize, usize)> = HashMap::new();
 
     let mut queue: PriorityQueue<(usize, usize), usize> = PriorityQueue::new();
-    queue.push(start_cell, 0);
+    queue.push(start_cell, 1);
 
     while queue.len() > 0 {
         // Do something with this later on.
@@ -301,11 +320,15 @@ pub fn bfs_solve(
                 path.insert((nrow, ncol), current);
 
                 let priority = match priority {
-                    Priority::Prio => {
-                        weighted_priority((nrow, ncol), maze.start_cell(), maze.end_cell())
-                    }
-                    Priority::Close => close_priority((nrow, ncol), maze.end_cell()),
+                    Priority::Prio => weighted_priority(
+                        (nrow, ncol),
+                        maze.start_cell,
+                        maze.end_cell,
+                        maze.max_dist(),
+                    ),
+                    Priority::Close => close_priority((nrow, ncol), maze.end_cell),
                     Priority::Disabled => 1,
+                    Priority::Random => rand::random_range(1..10),
                 };
                 queue.push((nrow, ncol), priority);
             }
@@ -362,8 +385,8 @@ pub fn get_backtrack_solution(
 
     backtrack(
         &maze,
-        maze.start_cell(),
-        maze.end_cell(),
+        maze.start_cell,
+        maze.end_cell,
         &mut path,
         &mut solution,
         &mut visited,

@@ -4,6 +4,8 @@ use crate::utils::{get_backtrack_solution, get_bfs_solution, Direction, Priority
 use std::collections::HashSet;
 const NROWS_PLACEHOLDER: usize = 10;
 const NCOLS_PLACEHOLDER: usize = 10;
+const START_PLACEHOLDER: (usize, usize) = (0, 0);
+const END_PLACEHOLDER: (usize, usize) = (9, 9);
 
 /// General TODO for entire project:
 /// * Smaller things:
@@ -85,19 +87,32 @@ pub fn Maze() -> Element {
     // We need signals and use effects for rows and columns
     let mut nrows: Signal<usize> = use_signal(|| NROWS_PLACEHOLDER);
     let mut ncols: Signal<usize> = use_signal(|| NCOLS_PLACEHOLDER);
+    let mut start_cell: Signal<(usize, usize)> = use_signal(|| START_PLACEHOLDER);
+    let mut end_cell: Signal<(usize, usize)> = use_signal(|| END_PLACEHOLDER);
 
     //
     let mut solution: Signal<HashSet<(usize, usize)>> = use_signal(|| HashSet::new());
     let mut visited: Signal<HashSet<(usize, usize)>> = use_signal(|| HashSet::new());
     let mut solver: Signal<String> = use_signal(|| "bfs".to_string());
 
-    let mut maze: Signal<WilsonMaze> =
-        use_signal(|| WilsonMaze::new(NROWS_PLACEHOLDER, NCOLS_PLACEHOLDER));
+    let mut maze: Signal<WilsonMaze> = use_signal(|| {
+        WilsonMaze::new(
+            NROWS_PLACEHOLDER,
+            NCOLS_PLACEHOLDER,
+            START_PLACEHOLDER,
+            END_PLACEHOLDER,
+        )
+    });
 
     // When changing cols or rows, we need to update the maze
     // and also set the solution to empty.
     use_effect(move || {
-        let mut m = WilsonMaze::new(*nrows.read(), *ncols.read());
+        let mut m = WilsonMaze::new(
+            *nrows.read(),
+            *ncols.read(),
+            *start_cell.read(),
+            *end_cell.read(),
+        );
         m.generate();
         maze.set(m);
         solution.set(HashSet::new());
@@ -125,7 +140,13 @@ pub fn Maze() -> Element {
                         step: "10",
                         list: "row-markers",
                         class: "slider",
-                        onchange: move |evt| { nrows.set(evt.value().parse().unwrap()) },
+                        onchange: move |evt| {
+                            let r: usize = evt.value().parse().unwrap();
+                            nrows.set(evt.value().parse().unwrap());
+                            start_cell.set((0, 0));
+                            let (_, end_c) = *end_cell.read();
+                            end_cell.set((r - 1, end_c));
+                        },
                     }
                     datalist { id: "row-markers",
                         option { value: "10" }
@@ -147,7 +168,13 @@ pub fn Maze() -> Element {
                         step: "10",
                         list: "col-markers",
                         class: "slider",
-                        onchange: move |evt| { ncols.set(evt.value().parse().unwrap()) },
+                        onchange: move |evt| {
+                            let c: usize = evt.value().parse().unwrap();
+                            ncols.set(c);
+                            start_cell.set((0, 0));
+                            let (end_r, _): (usize, usize) = *end_cell.read();
+                            end_cell.set((end_r, c - 1));
+                        },
                     }
                     datalist { id: "col-markers",
                         option { value: "10" }
@@ -156,11 +183,12 @@ pub fn Maze() -> Element {
                         option { value: "40" }
                     }
                     span { id: "col-input-span", "{ncols}" }
-
                 }
 
-
             }
+
+
+
 
             // We might streamline this with some kind of
             // enum of a vec of options.
@@ -173,12 +201,35 @@ pub fn Maze() -> Element {
                         solver.set(evt.value());
                     },
                     option { value: "bfs", "BFS Default" }
-                    option { value: "bfs-priority", "BFS Prio" }
+                    option { value: "bfs-prio", "BFS Prio" }
                     option { value: "bfs-close", "BFS Close" }
+                    option { value: "bfs-random", "BFS Random" }
                     option { value: "backtrack", "DFS Backtrack" }
 
                 }
+
             }
+
+            button {
+                id: "switch-btn",
+                onclick: move |_| {
+                    let r = *nrows.read();
+                    let c = *ncols.read();
+                    let start_r = rand::random_range(0..r);
+                    let start_c = rand::random_range(0..c);
+                    start_cell.set((start_r, start_c));
+                    let mut end_r = rand::random_range(0..r);
+                    let mut end_c = rand::random_range(0..c);
+                    while (start_r, start_c) == (end_r, end_c) {
+                        end_r = rand::random_range(0..r);
+                        end_c = rand::random_range(0..c);
+                    }
+                    end_cell.set((end_r, end_c));
+                },
+                "Randomize"
+            }
+
+
 
             div { id: "btn-row",
                 button {
@@ -188,6 +239,7 @@ pub fn Maze() -> Element {
                             &"bfs" => get_bfs_solution(&maze.read(), Priority::Disabled),
                             &"bfs-prio" => get_bfs_solution(&maze.read(), Priority::Prio),
                             &"bfs-close" => get_bfs_solution(&maze.read(), Priority::Close),
+                            &"bfs-random" => get_bfs_solution(&maze.read(), Priority::Random),
                             &"backtrack" => get_backtrack_solution(&maze.read()),
                             _ => panic!("Invalid solver method."),
                         };
@@ -202,6 +254,9 @@ pub fn Maze() -> Element {
                     onclick: move |_| {
                         solution.set(HashSet::new());
                         visited.set(HashSet::new());
+                        start_cell.set((0, 0));
+                        let c = *ncols.read();
+                        end_cell.set((c - 1, c - 1));
                     },
                     "Reset"
                 }
@@ -220,7 +275,6 @@ pub fn Maze() -> Element {
                         )
                     }
                 }
-
             }
 
             div { id: "maze-container",
@@ -236,11 +290,10 @@ pub fn Maze() -> Element {
                                     sol.contains(&(row, col)),
                                     visit.contains(&(row, col)),
                                 ),
-                                // This is not ideal
-                                if row == 0 && col == 0 {
+                                if (row, col) == *start_cell.read() {
                                     span { id: "start-cell", "S" }
                                 }
-                                if row == *nrows.read() - 1 && col == *ncols.read() - 1 {
+                                if (row, col) == *end_cell.read() {
                                     span { id: "end-cell", "E" }
                                 }
                             }

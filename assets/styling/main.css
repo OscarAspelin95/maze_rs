@@ -10,6 +10,12 @@ body {
 }
 
 
+
+
+button:hover {
+    background-color: #e95620;
+}
+
 #container {
     display: flex;
     flex-direction: column;
@@ -122,6 +128,10 @@ button {
     border-radius: 10px;
     width: 100px;
     margin: 10px;
+
+    &.switch-btn {
+        width: 200px;
+    }
 }
 
 .maze-cell {
