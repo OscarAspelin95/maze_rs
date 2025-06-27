@@ -11,17 +11,11 @@ const END_PLACEHOLDER: (usize, usize) = (9, 9);
 /// * Smaller things:
 ///
 /// * Refactor:
-///     ** Separate scripts for solvers.
 ///     ** Move certain functions out of maze.rs
 ///
 /// * Misc:
 ///     ** Add ability to set start point.
 ///     ** Check why row/col selection sometimes bugs out (dioxus related)?
-///     ** Remove unused functions.
-///     ** Make solver into an Enum.
-///     ** Streamline css and get_class_name function for cells.
-///     ** Other distance metric for BFS Prio?
-///     ** Visited does not include start and/or end cell.
 ///
 /// * Performance:
 ///     ** Visited should actually be (visited - solution).

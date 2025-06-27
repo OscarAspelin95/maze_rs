@@ -1,2 +1,8 @@
 mod utils;
-pub use utils::{get_backtrack_solution, get_bfs_solution, Direction, Priority, WilsonMaze};
+pub use utils::{Direction, WilsonMaze};
+
+mod bfs_solver;
+pub use bfs_solver::{get_bfs_solution, Priority};
+
+mod dfs_solver;
+pub use dfs_solver::get_backtrack_solution;
