@@ -1,7 +1,7 @@
 # maze_rs
 Implementation of a classic maze generator and solver. Uses Wilson's algorithm for maze generation and supports DFS and a number of BFS algorithms for solving.
 
-Built using the [Dioxus](https://github.com/DioxusLabs/dioxus).
+Built using the [Dioxus](https://github.com/DioxusLabs/dioxus) framework.
 
 ## Requirements
 - Linux OS (Ubuntu 24.04.2)
