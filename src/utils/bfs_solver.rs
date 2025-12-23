@@ -4,13 +4,9 @@ use std::collections::{HashMap, HashSet};
 use crate::utils::WilsonMaze;
 
 pub enum Priority {
-    // Normal BFS.
     Disabled,
-    // Prioritize cells closer to start cell (very non ideal).
     Close,
-    // Prioritize cells that are further away from start point and closer to end point.
     Prio,
-    // Given each neighbor a random priority.
     Random,
 }
 
@@ -57,24 +53,20 @@ pub fn bfs_solve(
     let start_cell = maze.start_cell;
 
     let mut visited: HashSet<(usize, usize)> = HashSet::new();
-
     let mut path: HashMap<(usize, usize), (usize, usize)> = HashMap::new();
 
     let mut queue: PriorityQueue<(usize, usize), usize> = PriorityQueue::new();
     queue.push(start_cell, 1);
 
     while queue.len() > 0 {
-        // Do something with this later on.
         let (current, _) = queue.pop().unwrap();
         visited.insert(current);
 
-        // We have reached the end cell.
         if current == end_cell {
             return (path, visited);
         }
 
         for (direction, (nrow, ncol)) in maze.neighbors(current.0 as i32, current.1 as i32) {
-            // Otherwise, we need to check if
             if !visited.contains(&(nrow, ncol))
                 && maze.grid[current.0][current.1].contains(&direction)
             {
