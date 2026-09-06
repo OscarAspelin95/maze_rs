@@ -10,9 +10,9 @@ The easiest way to get started is to download the `.AppImage` application from t
 ## Development
 
 ### Requirements
-- Linux OS (Ubuntu 24.04.2)
-- Rust 2021 edition
-- Dioxus cli == 0.7.2
+- Linux OS (Ubuntu >=24)
+- Rust 2024 edition
+- Dioxus cli == 0.7.10 (`cargo install dioxus-cli --version 0.7.10`)
 
 ### Installation
 Make sure `cargo` and `dioxus-cli` are installed.

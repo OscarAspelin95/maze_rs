@@ -2,10 +2,10 @@
 name = "maze_rs"
 version = "0.0.1"
 authors = ["Oscar Aspelin <oscar.aspelin@gmail.com>"]
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-dioxus = { version = "0.7.7" }
+dioxus = { version = "0.7.10" }
 rand = { version = "0.10.1" }
 priority-queue = { version = "2.7.0" }
 
